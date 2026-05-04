@@ -212,47 +212,6 @@ p { font-size:clamp(12px,1.3vw,15px); color:var(--s700); line-height:1.7; }
 <div id="deck">
 
 <!-- ══════════════════════════════════════════════
-     SLIDE 00 — Quem sou eu?
-══════════════════════════════════════════════ -->
-<div class="slide active" id="s0">
-  <div class="tag">Seção 00 — O Instrutor</div>
-  <h2>Quem sou eu?</h2>
-  
-  <div class="g2" style="gap:40px; align-items: center;">
-    <div>
-      <div style="margin-bottom: 24px;">
-        <h1 style="font-size: 48px; margin-bottom: 8px;">Arquimedes <br><em>França</em></h1>
-        <p style="font-size: 18px; color: var(--b600); font-weight: 600;">Solution Architect Analyst | Cientista da Computação</p>
-      </div>
-      
-      <div style="display: flex; flex-direction: column; gap: 12px;">
-        <div class="card cl" style="padding: 15px;">
-          <h3>Experiência e Formação</h3>
-          <p>Bacharel em Ciência da Computação (UPE) com foco em arquitetura de soluções e inteligência artificial.</p>
-        </div>
-        <div class="card clg" style="padding: 15px;">
-          <h3>Pesquisa e Inovação</h3>
-          <p>Mestrando em Engenharia de Computação, focado em modelos preditivos e otimização de tecnologia.</p>
-        </div>
-      </div>
-    </div>
-
-    <div style="display: flex; flex-direction: column; gap: 15px;">
-      <div style="width: 100%; aspect-ratio: 1/1; border-radius: 20px; background: var(--s100); overflow: hidden; border: 4px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; position: relative;">
-        <div style="text-align: center; color: var(--s400);">
-           <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-bottom: 10px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-           <p style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">linkedin.com/in/arquimedesjffranca</p>
-        </div>
-      </div>
-      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-         <span class="bd bb">AI & Deep Learning</span>
-         <span class="bd bg">Software Architecture</span>
-         <span class="bd ba">Tech Mentor</span>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- ══════════════════════════════════════════════
      SLIDE 01 — CAPA
 ══════════════════════════════════════════════ -->
 <div class="slide active" id="s1">
@@ -291,6 +250,72 @@ p { font-size:clamp(12px,1.3vw,15px); color:var(--s700); line-height:1.7; }
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════
+     SLIDE 00 — Quem sou eu?
+══════════════════════════════════════════════ -->
+<!-- ══════════════════════════════════════════════
+     NOVO SLIDE: BIO + MITO DE ÍCARO
+══════════════════════════════════════════════ -->
+<div class="slide" id="s_bio">
+  <div class="tag">01 — O Instrutor</div>
+  <h2>Quem sou eu?</h2>
+  
+  <div class="g2" style="gap:40px; align-items: start;">
+    
+    <!-- Coluna Esquerda: Sua Bio -->
+    <div>
+      <div style="margin-bottom: 24px;">
+        <h1 style="font-size: 48px; margin-bottom: 8px;">Arquimedes <br><em>França</em></h1>
+        <p style="font-size: 18px; color: var(--b600); font-weight: 600;">Arquiteto de Soluções | Cientista da Computação</p>
+      </div>
+      
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div class="card cl" style="padding: 15px;">
+          <h3>Experiência e Formação</h3>
+          <p>Bacharel em Ciência da Computação (UPE) com foco em arquitetura de soluções e inteligência artificial.</p>
+        </div>
+        <div class="card clg" style="padding: 15px;">
+          <h3>Pesquisa e Inovação</h3>
+          <p>Mestrando em Engenharia de Computação, focado em modelos preditivos e otimização de tecnologia.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coluna Direita: O Mito de Ícaro -->
+    <div style="display: flex; flex-direction: column; gap: 15px;">
+      
+      <div class="card" style="background: var(--navy); color: #fff; padding: 22px; border: none; box-shadow: 0 10px 25px rgba(15,23,42,0.15);">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+          <span style="font-size: 22px;">🏛️</span>
+          <h3 style="color: var(--a400); margin: 0; font-size: 17px;">O Voo de Ícaro</h3>
+        </div>
+        
+        <p style="color: var(--s300); font-size: 13px; margin-bottom: 16px; line-height: 1.6;">
+          Sou apaixonado por histórias, jogos, conexões e mitologias. O mito de Ícaro reflete perfeitamente a jornada na programação:
+        </p>
+        
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0;">
+           <li style="font-size: 13px; line-height: 1.5;">
+             <span style="color: var(--a500); font-weight: 700;">As Asas:</span> Nossas ferramentas e o código que usamos para escapar do Labirinto (problemas).
+           </li>
+           <li style="font-size: 13px; line-height: 1.5;">
+             <span style="color: var(--a500); font-weight: 700;">A Queda:</span> Acontece quando voamos sem rumo, cegos apenas pela tecnologia.
+           </li>
+           <li style="font-size: 13px; line-height: 1.5;">
+             <span style="color: var(--a500); font-weight: 700;">O Equilíbrio:</span> É o planejamento e a lógica. É o que impede o nosso projeto de "derreter".
+           </li>
+        </ul>
+      </div>
+
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+         <span class="bd bb">AI & Deep Learning</span>
+         <span class="bd bg">Software Architecture</span>
+         <span class="bd ba">Tech Mentor</span>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════════════
      SLIDE 02 — DINÂMICA DE CONEXÃO
