@@ -919,6 +919,73 @@ p { font-size:clamp(12px,1.3vw,15px); color:var(--s700); line-height:1.7; }
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════
+     NOVO SLIDE: PAUSA & SETUP
+══════════════════════════════════════════════ -->
+<div class="slide" id="s_pausa">
+  <div class="tag">Pausa — 15 Minutos</div>
+  <h2>Hora do Café & Setup ☕</h2>
+  <p style="font-size:clamp(14px,1.8vw,18px); margin-bottom:28px;">
+    Vá tomar uma água e esticar as pernas. <br>
+    <strong style="color:var(--b600);">Mas antes, deixe estas 3 coisas prontas para quando voltarmos:</strong>
+  </p>
+
+  <div class="g2" style="gap:30px; align-items: stretch;">
+
+    <!-- Coluna Esquerda: QR Code Grande -->
+    <div class="card ct" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding: 30px;">
+      <div style="margin-bottom: 15px;">
+        <span class="bd bb" style="font-size: 13px; padding: 6px 14px;">1. Baixar Arquivos de Mídia</span>
+      </div>
+      <p style="font-size:14px; color:var(--s600); margin-bottom: 22px;">
+        Escaneie o QR Code abaixo com o celular ou acesse no PC para baixar a imagem da raquete, o fundo e os áudios do jogo.
+      </p>
+
+      <!-- QR Code Gerado Dinamicamente via API -->
+      <div style="background:#fff; padding:18px; border-radius:16px; border:2px solid var(--s200); box-shadow:0 8px 24px rgba(15,23,42,0.06);">
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=https://drive.google.com/drive/folders/1IiwHPgrWJ0Vm2PZ90cK2L-YwVvV_eI4x&margin=0"
+             alt="QR Code do Google Drive"
+             style="width: 220px; height: 220px; display: block; image-rendering: auto;">
+      </div>
+    </div>
+
+    <!-- Coluna Direita: Passos 2 e 3 -->
+    <div style="display:flex; flex-direction:column; gap:20px;">
+
+      <!-- Passo 2: Login MIT App Inventor -->
+      <div class="card cg" style="flex:1; display:flex; flex-direction:column; justify-content:center; padding: 25px;">
+        <div style="margin-bottom: 12px;">
+          <span class="bd bg" style="font-size: 12px;">2. Entrar no Site (No Computador)</span>
+        </div>
+        <h3 style="font-size: 24px; color:var(--navy); margin-bottom: 8px;">ai2.appinventor.mit.edu</h3>
+        <p style="font-size: 14px; color: var(--s600);">
+          Abra este link no navegador do seu computador e faça login usando a sua conta do Google.
+        </p>
+      </div>
+
+      <!-- Passo 3: App Companion no Celular -->
+      <div class="card ca" style="flex:1; display:flex; flex-direction:column; justify-content:center; padding: 25px;">
+        <div style="margin-bottom: 12px;">
+          <span class="bd ba" style="font-size: 12px;">3. Baixar o App (No Celular)</span>
+        </div>
+        <h3 style="font-size: 22px; color:var(--navy); margin-bottom: 8px;">MIT AI2 Companion</h3>
+        <p style="font-size: 14px; color: var(--s600); margin-bottom: 16px;">
+          Busque por este nome exato na loja de aplicativos do seu celular e deixe-o instalado para testarmos o jogo no final.
+        </p>
+        <div style="display: flex; gap: 10px;">
+          <span style="font-size: 13px; font-weight: 600; padding: 8px 14px; background: var(--navy); color: #fff; border-radius: 8px; display: flex; align-items: center; gap: 6px;">
+            🍎 App Store
+          </span>
+          <span style="font-size: 13px; font-weight: 600; padding: 8px 14px; background: var(--g600); color: #fff; border-radius: 8px; display: flex; align-items: center; gap: 6px;">
+            🤖 Play Store
+          </span>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════════════
      SLIDE 12 — ENCERRAMENTO
