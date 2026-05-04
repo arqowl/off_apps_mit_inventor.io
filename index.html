@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oficina de Aplicativos — Ping Pong | MIT App Inventor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #F8FAFC;
+  --navy:     #0F172A;
+  --n800:     #1E293B;
+  --s700:     #334155;
+  --s600:     #475569;
+  --s500:     #64748B;
+  --s400:     #94A3B8;
+  --s300:     #CBD5E1;
+  --s200:     #E2E8F0;
+  --s100:     #F1F5F9;
+  --s050:     #F8FAFC;
+  --b600:     #2563EB;
+  --b500:     #3B82F6;
+  --b200:     #BFDBFE;
+  --b100:     #DBEAFE;
+  --b050:     #EFF6FF;
+  --a500:     #F59E0B;
+  --a400:     #FBBF24;
+  --a100:     #FEF3C7;
+  --a050:     #FFFBEB;
+  --g600:     #059669;
+  --g500:     #10B981;
+  --g100:     #D1FAE5;
+  --g050:     #ECFDF5;
+  --r500:     #EF4444;
+  --r100:     #FEE2E2;
+  --r050:     #FFF1F2;
+  --code:     #1E293B;
+  --ctext:    #E2E8F0;
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0; }
+
+html,body {
+  width:100%; height:100%;
+  overflow:hidden;
+  font-family:'Outfit',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--navy);
+}
+
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:radial-gradient(var(--s300) 1px, transparent 1px);
+  background-size:28px 28px;
+  opacity:.45;
+  z-index:0;
+  pointer-events:none;
+}
+
+#deck { width:100vw; height:100vh; position:relative; z-index:1; }
+
+.slide {
+  position:absolute; inset:0;
+  padding:clamp(28px,4.5vh,60px) clamp(36px,6vw,90px);
+  display:flex; flex-direction:column; justify-content:center;
+  opacity:0; transform:translateY(18px);
+  transition:opacity .42s cubic-bezier(.4,0,.2,1),
+             transform .42s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;
+}
+.slide.active { opacity:1; transform:translateY(0); pointer-events:all; }
+
+/* ── NAV ── */
+#bar {
+  position:fixed; bottom:0; left:0; height:3px;
+  background:linear-gradient(90deg,var(--b600),var(--b500));
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+  z-index:200; border-radius:0 2px 0 0;
+}
+#ctr {
+  position:fixed; bottom:13px; right:18px;
+  font-size:10px; font-weight:700; letter-spacing:.14em;
+  text-transform:uppercase; color:var(--s400); z-index:200;
+}
+.nav {
+  position:fixed; top:50%; transform:translateY(-50%);
+  width:38px; height:38px; border-radius:50%;
+  border:1.5px solid var(--s300);
+  background:rgba(248,250,252,.88);
+  backdrop-filter:blur(8px);
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  color:var(--s600); font-size:18px; z-index:200;
+  transition:all .18s ease; font-family:'Outfit',sans-serif;
+}
+.nav:hover { border-color:var(--b600); color:var(--b600); box-shadow:0 4px 16px rgba(37,99,235,.18); }
+.nav:disabled { opacity:.22; cursor:default; pointer-events:none; }
+#prev { left:13px; }
+#next { right:13px; }
+
+/* ── TYPE ── */
+.tag {
+  font-size:10.5px; font-weight:700; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--b600); margin-bottom:10px;
+  display:flex; align-items:center; gap:8px;
+}
+.tag::before {
+  content:''; display:inline-block;
+  width:22px; height:2px;
+  background:var(--b600); border-radius:1px;
+}
+h1 {
+  font-family:'DM Serif Display',Georgia,serif;
+  font-size:clamp(34px,5.2vw,66px);
+  color:var(--navy); line-height:1.08; font-weight:400;
+}
+h1 em { color:var(--b600); font-style:italic; }
+h2 {
+  font-family:'DM Serif Display',Georgia,serif;
+  font-size:clamp(24px,3.2vw,44px);
+  color:var(--navy); line-height:1.14; font-weight:400; margin-bottom:22px;
+}
+h3 { font-size:clamp(13px,1.3vw,16px); font-weight:700; color:var(--navy); margin-bottom:7px; }
+p { font-size:clamp(12px,1.3vw,15px); color:var(--s700); line-height:1.7; }
+
+/* ── LAYOUT ── */
+.g2 { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
+.g3 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+.g4 { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+
+.card {
+  background:#fff; border:1.5px solid var(--s200);
+  border-radius:13px; padding:clamp(14px,1.8vw,22px);
+  position:relative; overflow:hidden;
+}
+.ct  { border-top:3px solid var(--b600); }
+.ca  { border-top:3px solid var(--a500); }
+.cg  { border-top:3px solid var(--g500); }
+.cr  { border-top:3px solid var(--r500); }
+.cl  { border-left:3px solid var(--b600); }
+.cla { border-left:3px solid var(--a500); }
+.clg { border-left:3px solid var(--g500); }
+.clr { border-left:3px solid var(--r500); }
+
+/* ── BADGES ── */
+.bd {
+  display:inline-flex; align-items:center; gap:4px;
+  padding:3px 10px; border-radius:20px;
+  font-size:10.5px; font-weight:700; letter-spacing:.02em;
+  white-space:nowrap;
+}
+.bb { background:var(--b100); color:#1D4ED8; }
+.ba { background:var(--a100); color:#92400E; }
+.bg { background:var(--g100); color:#065F46; }
+.br { background:var(--r100); color:#991B1B; }
+.bs { background:var(--s100); color:var(--s700); }
+
+/* ── CODE ── */
+.code {
+  background:var(--code); border-radius:11px;
+  padding:16px 20px;
+  font-family:'Courier New','Consolas',monospace;
+  font-size:clamp(11px,1.1vw,13px); line-height:1.9;
+  color:var(--ctext); position:relative; overflow:hidden;
+}
+.code::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,var(--b600),var(--a500),var(--g500));
+}
+.kw { color:#93C5FD; font-weight:700; }
+.st { color:#86EFAC; }
+.nm { color:#FCA5A5; }
+.cm { color:#6B7280; font-style:italic; }
+.fn { color:#FCD34D; }
+.op { color:#F9A8D4; }
+.va { color:#C4B5FD; }
+
+/* ── PILLS ── */
+.pill {
+  display:inline-block; padding:5px 14px;
+  border:1.5px solid var(--s300); border-radius:100px;
+  font-size:12px; font-weight:500; color:var(--s700); background:#fff;
+}
+.pill-b { border-color:var(--b600); color:var(--b600); background:var(--b050); }
+
+/* ── INFO BOXES ── */
+.ib { padding:14px 18px; border-radius:10px; border-left:3px solid var(--b600); background:var(--b050); }
+.wb { padding:14px 18px; border-radius:10px; border-left:3px solid var(--a500); background:var(--a050); }
+.ob { padding:14px 18px; border-radius:10px; border-left:3px solid var(--g500); background:var(--g050); }
+
+/* ── DARK SLIDE (12) ── */
+.dark { background:var(--navy); }
+.dark .tag { color:var(--b200); }
+.dark .tag::before { background:var(--b200); }
+.dark h2 { color:#fff; }
+.dark p { color:var(--s400); }
+
+/* ── ANIM ── */
+@keyframes float {
+  0%,100%{ transform:translateY(0) }
+  50%{ transform:translateY(-11px) }
+}
+@keyframes spin {
+  from{ transform:rotate(0deg) }
+  to{ transform:rotate(360deg) }
+}
+</style>
+</head>
+<body>
+<div id="deck">
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 01 — CAPA
+══════════════════════════════════════════════ -->
+<div class="slide active" id="s1">
+  <!-- Background rings -->
+  <div style="position:absolute;right:60px;top:50%;transform:translateY(-50%);opacity:.04;pointer-events:none;">
+    <svg width="500" height="500" viewBox="0 0 500 500">
+      <circle cx="250" cy="250" r="230" fill="none" stroke="#0F172A" stroke-width="1.5"/>
+      <circle cx="250" cy="250" r="155" fill="none" stroke="#0F172A" stroke-width="1"/>
+      <circle cx="250" cy="250" r="80" fill="none" stroke="#0F172A" stroke-width="1"/>
+      <line x1="20" y1="250" x2="480" y2="250" stroke="#0F172A" stroke-width=".8"/>
+      <line x1="250" y1="20" x2="250" y2="480" stroke="#0F172A" stroke-width=".8"/>
+    </svg>
+  </div>
+  <!-- Floating ball -->
+  <div style="position:absolute;right:clamp(100px,14vw,190px);top:26%;animation:float 3.4s ease-in-out infinite;pointer-events:none;">
+    <svg width="52" height="52"><circle cx="26" cy="26" r="24" fill="#2563EB"/><circle cx="19" cy="19" r="7" fill="rgba(255,255,255,.22)"/></svg>
+  </div>
+  <!-- Paddle shadow -->
+  <div style="position:absolute;right:clamp(60px,9vw,140px);top:55%;opacity:.1;pointer-events:none;">
+    <div style="width:130px;height:13px;background:var(--navy);border-radius:7px;"></div>
+  </div>
+
+  <div style="max-width:660px;position:relative;z-index:1;">
+    <div class="tag">MIT App Inventor &nbsp;·&nbsp; Ensino Médio &nbsp;·&nbsp; 3 Horas</div>
+    <div style="width:3px;height:70px;background:var(--b600);border-radius:2px;margin:10px 0 18px;"></div>
+    <h1>Oficina de<br><em>Aplicativos</em></h1>
+    <p style="font-size:clamp(15px,2vw,22px);color:var(--s600);font-weight:300;margin:14px 0 28px;">Construindo um Jogo de Ping Pong</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <span class="bd bb">🎮 Jogo Interativo</span>
+      <span class="bd ba">🧠 Lógica de Programação</span>
+      <span class="bd bg">📱 App no Celular</span>
+    </div>
+    <div style="margin-top:44px;padding-top:18px;border-top:1px solid var(--s200);">
+      <p style="font-size:12px;color:var(--s400);font-style:italic;">Você vai sair daqui com um jogo rodando no seu celular. De verdade.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 02 — DINÂMICA DE CONEXÃO
+══════════════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="tag">01 — Conexão</div>
+  <h2>Vamos nos conhecer</h2>
+
+  <div class="g3" style="margin-bottom:18px;">
+    <div class="card ct">
+      <div style="font-size:26px;margin-bottom:8px;">🌅</div>
+      <h3>Abertura</h3>
+      <p>Qual app você abre primeiro de manhã? <em>Por que ele importa pra você?</em></p>
+    </div>
+    <div class="card ca">
+      <div style="font-size:26px;margin-bottom:8px;">🚀</div>
+      <h3>Aspiração</h3>
+      <p>Se você pudesse criar qualquer app do zero, o que ele <em>faria?</em></p>
+    </div>
+    <div class="card cg">
+      <div style="font-size:26px;margin-bottom:8px;">🔧</div>
+      <h3>Nivelamento</h3>
+      <p>Você já criou algo? Site, jogo, vídeo, história — qualquer criação conta.</p>
+    </div>
+  </div>
+
+  <div class="ib" style="margin-bottom:18px;">
+    <p><strong style="color:var(--b600);">Regra única:</strong> Não existe resposta certa ou errada. Programação é sobre <em>pensar</em>, não sobre decorar sintaxe.</p>
+  </div>
+
+  <div>
+    <div class="tag" style="margin-bottom:8px;">Nivelamento rápido — levantar a mão</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <span class="pill">✋ Já ouvi falar em programação</span>
+      <span class="pill">✏️ Já escrevi algum código</span>
+      <span class="pill">🎮 Joguei algum jogo hoje</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 03 — O QUE É INTERFACE?
+══════════════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="tag">02 — Interface de Usuário</div>
+  <h2>O que é Interface?</h2>
+
+  <div class="g2" style="gap:36px;align-items:center;">
+    <div>
+      <p style="font-size:clamp(13px,1.6vw,18px);margin-bottom:20px;line-height:1.65;">Interface é a <strong>ponte entre humano e máquina.</strong> É tudo que o usuário vê, toca e compreende.</p>
+
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div style="display:flex;align-items:center;gap:12px;padding:13px 15px;background:#fff;border:1.5px solid var(--s200);border-radius:10px;">
+          <span style="font-size:22px;min-width:32px;text-align:center;">👁</span>
+          <div>
+            <div style="font-weight:700;font-size:13px;color:var(--navy);">Visual</div>
+            <p style="font-size:12px;margin:0;">O que o usuário <strong>vê</strong> — cores, formas, tipografia</p>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:13px 15px;background:#fff;border:1.5px solid var(--s200);border-radius:10px;">
+          <span style="font-size:22px;min-width:32px;text-align:center;">🖐</span>
+          <div>
+            <div style="font-weight:700;font-size:13px;color:var(--navy);">Interativo</div>
+            <p style="font-size:12px;margin:0;">Com o que o usuário <strong>interage</strong> — botões, gestos, arrastar</p>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;padding:13px 15px;background:#fff;border:1.5px solid var(--s200);border-radius:10px;">
+          <span style="font-size:22px;min-width:32px;text-align:center;">🧠</span>
+          <div>
+            <div style="font-weight:700;font-size:13px;color:var(--navy);">Mental</div>
+            <p style="font-size:12px;margin:0;">O que o usuário <strong>entende</strong> — sem precisar ler manual</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card" style="text-align:center;padding:28px 22px;margin-bottom:14px;">
+        <p style="font-family:'DM Serif Display',serif;font-size:clamp(14px,1.8vw,20px);color:var(--navy);line-height:1.55;font-style:italic;margin-bottom:18px;">"Uma boa interface é invisível — você só a percebe quando ela é ruim."</p>
+        <div style="width:36px;height:2px;background:var(--s300);margin:0 auto 14px;"></div>
+        <p style="font-size:11px;color:var(--s400);">Princípio de Design de Interação</p>
+      </div>
+      <div class="wb">
+        <p style="font-size:12px;"><strong style="color:#92400E;">Exemplo:</strong> Imagina um elevador sem nenhuma indicação de onde ficam os botões. Ele funciona — mas é uma experiência terrível.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 04 — POR QUE GENÉRICO VENCE?
+══════════════════════════════════════════════ -->
+<div class="slide" id="s4">
+  <div class="tag">03 — UI: Convenção vs. Criatividade</div>
+  <h2>Por que o "Genérico" é Poderoso?</h2>
+
+  <div class="g2" style="gap:28px;margin-bottom:16px;">
+    <div>
+      <div style="margin-bottom:12px;"><span class="bd bg">✅ Convenção Funciona</span></div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:11px;padding:11px 14px;background:#fff;border:1.5px solid var(--s200);border-radius:9px;">
+          <div style="width:30px;height:30px;background:#EF4444;border-radius:6px;display:flex;align-items:center;justify-content:center;"><div style="width:10px;height:10px;background:#fff;border-radius:1px;"></div></div>
+          <div><strong style="font-size:13px;">Vermelho</strong> <span style="font-size:12px;color:var(--s500);">→ Parar / Perigo / Excluir</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:11px;padding:11px 14px;background:#fff;border:1.5px solid var(--s200);border-radius:9px;">
+          <div style="width:30px;height:30px;background:var(--s100);border:1.5px solid var(--s300);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;">🔍</div>
+          <div><strong style="font-size:13px;">Lupa</strong> <span style="font-size:12px;color:var(--s500);">→ Buscar (em qualquer app do mundo)</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:11px;padding:11px 14px;background:#fff;border:1.5px solid var(--s200);border-radius:9px;">
+          <div style="width:30px;height:30px;background:var(--s100);border:1.5px solid var(--s300);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--s600);font-weight:700;">✕</div>
+          <div><strong style="font-size:13px;">X no canto</strong> <span style="font-size:12px;color:var(--s500);">→ Fechar janela/modal</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:11px;padding:11px 14px;background:#fff;border:1.5px solid var(--s200);border-radius:9px;">
+          <div style="width:30px;height:30px;background:var(--s100);border:1.5px solid var(--s300);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:15px;">☰</div>
+          <div><strong style="font-size:13px;">Hambúrguer</strong> <span style="font-size:12px;color:var(--s500);">→ Menu de navegação</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div style="margin-bottom:12px;"><span class="bd ba">⚠️ "Inovação" sem contexto</span></div>
+      <div class="card" style="padding:18px;margin-bottom:12px;">
+        <p style="font-size:13px;color:var(--s700);line-height:1.7;margin-bottom:10px;">Renomear "Fechar" como <strong>"Ejetar da Experiência"</strong> parece criativo, mas o usuário trava. O custo cognitivo de aprender uma nova convenção é alto demais.</p>
+        <div style="height:1px;background:var(--s200);margin-bottom:10px;"></div>
+        <p style="font-size:11px;color:var(--s500);font-style:italic;">Inovar na forma de interagir pede que o usuário desaprenda. Isso cria atrito.</p>
+      </div>
+      <div class="wb">
+        <p style="font-size:12px;"><strong style="color:#92400E;">Foco:</strong> No nosso app, os botões START e PAUSE já comunicam tudo antes do usuário tocar. Essa é a força do genérico.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:13px 18px;background:var(--navy);border-radius:10px;display:flex;align-items:center;gap:14px;">
+    <span style="font-size:18px;flex-shrink:0;">💡</span>
+    <p style="color:rgba(255,255,255,.82);font-size:13px;font-weight:500;margin:0;"><strong style="color:var(--b200);">Princípio:</strong> Convenção vence criatividade quando o objetivo é usabilidade. Inove no conteúdo, não na navegação.</p>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 05 — COMPONENTES DO APP
+══════════════════════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="tag">04 — Anatomia do App</div>
+  <h2>Componentes do Nosso Jogo</h2>
+
+  <div class="g2" style="gap:32px;align-items:center;">
+    <!-- Phone wireframe -->
+    <div style="display:flex;justify-content:center;">
+      <div style="width:186px;border:2.5px solid var(--navy);border-radius:26px;overflow:hidden;background:#fff;box-shadow:0 20px 48px rgba(15,23,42,.14);">
+        <div style="background:var(--navy);height:22px;display:flex;align-items:center;justify-content:center;">
+          <div style="width:52px;height:7px;background:rgba(255,255,255,.25);border-radius:4px;"></div>
+        </div>
+        <!-- header -->
+        <div style="background:var(--s100);padding:7px 10px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--s200);">
+          <span style="font-size:8.5px;font-weight:700;color:var(--s600);">Pontos: 0</span>
+          <div style="display:flex;gap:4px;">
+            <div style="background:#EF4444;border-radius:4px;padding:2px 6px;"><span style="font-size:6.5px;color:#fff;font-weight:700;">START</span></div>
+            <div style="background:#F59E0B;border-radius:4px;padding:2px 6px;"><span style="font-size:6.5px;color:#fff;font-weight:700;">PAUSE</span></div>
+          </div>
+        </div>
+        <!-- canvas -->
+        <div style="background:linear-gradient(170deg,#BAE6FD,#E0F2FE);height:172px;position:relative;overflow:hidden;">
+          <!-- mountain sketch -->
+          <svg style="position:absolute;bottom:0;left:0;right:0;" width="186" height="60" viewBox="0 0 186 60" preserveAspectRatio="none">
+            <polygon points="0,60 50,10 100,40 150,5 186,30 186,60" fill="rgba(100,116,139,.12)"/>
+          </svg>
+          <div style="position:absolute;top:36px;left:50%;transform:translateX(-50%);width:13px;height:13px;background:var(--b600);border-radius:50%;animation:float 2.2s ease-in-out infinite;box-shadow:0 2px 8px rgba(37,99,235,.45);"></div>
+          <div style="position:absolute;bottom:18px;left:50%;transform:translateX(-50%);width:66px;height:7px;background:var(--navy);border-radius:4px;"></div>
+          <span style="position:absolute;bottom:4px;left:50%;transform:translateX(-50%);font-size:5.5px;color:var(--s500);white-space:nowrap;">Canvas (Pintura1)</span>
+        </div>
+        <!-- checkboxes -->
+        <div style="padding:6px 10px;background:var(--s050);border-top:1px solid var(--s200);">
+          <div style="display:flex;gap:10px;">
+            <span style="font-size:7px;color:var(--s600);">☑ Som On</span>
+            <span style="font-size:7px;color:var(--s600);">☑ Avançado</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Component rows -->
+    <div style="display:flex;flex-direction:column;gap:9px;">
+      <div class="card cl" style="padding:11px 15px;display:flex;align-items:center;gap:11px;">
+        <span class="bd bb" style="min-width:86px;justify-content:center;">Canvas</span>
+        <p style="font-size:12px;margin:0;">O <strong>campo do jogo</strong>. Onde a bola e a raquete existem e se movem.</p>
+      </div>
+      <div class="card cl" style="padding:11px 15px;display:flex;align-items:center;gap:11px;">
+        <span class="bd bs" style="min-width:86px;justify-content:center;">Label</span>
+        <p style="font-size:12px;margin:0;"><strong>Exibe texto</strong>. Mostra o placar — atualizado em tempo real.</p>
+      </div>
+      <div class="card clr" style="padding:11px 15px;display:flex;align-items:center;gap:11px;">
+        <span class="bd br" style="min-width:86px;justify-content:center;">Button</span>
+        <p style="font-size:12px;margin:0;"><strong>Dispara ações.</strong> START inicia; PAUSE congela a bola no lugar.</p>
+      </div>
+      <div class="card cla" style="padding:11px 15px;display:flex;align-items:center;gap:11px;">
+        <span class="bd ba" style="min-width:86px;justify-content:center;">CheckBox</span>
+        <p style="font-size:12px;margin:0;"><strong>Liga/desliga</strong> funcionalidades: Som e Dificuldade crescente.</p>
+      </div>
+      <div class="card clg" style="padding:11px 15px;display:flex;align-items:center;gap:11px;">
+        <span class="bd bg" style="min-width:86px;justify-content:center;">Arrangement</span>
+        <p style="font-size:12px;margin:0;"><strong>Grade invisível</strong> que posiciona e alinha os outros componentes.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 06 — O CÉREBRO DO APP
+══════════════════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="tag">05 — Lógica de Programação</div>
+  <h2>O Cérebro por Trás dos Blocos</h2>
+
+  <p style="max-width:560px;margin-bottom:28px;font-size:clamp(13px,1.5vw,17px);">Todo programa — de um jogo a um banco — é feito de apenas <strong>quatro ingredientes</strong>:</p>
+
+  <div class="g4" style="margin-bottom:26px;">
+    <div class="card ct" style="text-align:center;padding:20px 14px;">
+      <div style="font-size:30px;margin-bottom:8px;">🔀</div>
+      <h3>Controle</h3>
+      <p style="font-size:11px;color:var(--s500);">Se... Então... Senão</p>
+    </div>
+    <div class="card ca" style="text-align:center;padding:20px 14px;">
+      <div style="font-size:30px;margin-bottom:8px;">➕</div>
+      <h3>Matemática</h3>
+      <p style="font-size:11px;color:var(--s500);">Operações e Módulo</p>
+    </div>
+    <div class="card cg" style="text-align:center;padding:20px 14px;">
+      <div style="font-size:30px;margin-bottom:8px;">🗃️</div>
+      <h3>Variáveis</h3>
+      <p style="font-size:11px;color:var(--s500);">Memória do app</p>
+    </div>
+    <div class="card cr" style="text-align:center;padding:20px 14px;">
+      <div style="font-size:30px;margin-bottom:8px;">📦</div>
+      <h3>Procedimentos</h3>
+      <p style="font-size:11px;color:var(--s500);">Atalhos reutilizáveis</p>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+    <span style="font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--s500);text-transform:uppercase;">Fórmula</span>
+    <span class="pill-b pill">DADOS</span>
+    <span style="color:var(--s400);font-size:20px;font-weight:300;">+</span>
+    <span class="pill-b pill">LÓGICA</span>
+    <span style="color:var(--s400);font-size:20px;font-weight:300;">+</span>
+    <span class="pill-b pill">AÇÕES</span>
+    <span style="color:var(--s400);font-size:20px;font-weight:300;">=</span>
+    <span style="font-family:'DM Serif Display',serif;font-size:clamp(16px,2vw,24px);color:var(--b600);font-style:italic;">Qualquer Programa</span>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 07 — CONTROLE DE FLUXO + BOOLEANOS
+══════════════════════════════════════════════ -->
+<div class="slide" id="s7">
+  <div class="tag">06 — Controle de Fluxo</div>
+  <h2>Se... Então... Senão</h2>
+
+  <div class="g2" style="gap:26px;align-items:start;">
+    <div>
+      <div class="code" style="margin-bottom:14px;">
+<span class="cm">// Exemplo real do nosso jogo</span>
+<br><span class="kw">SE</span> <span class="va">borda</span> <span class="op">=</span> <span class="nm">-1</span>   <span class="cm">← borda inferior</span>
+<br>&nbsp;&nbsp;<span class="kw">ENTÃO</span>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="va">Pontos</span>.texto <span class="op">←</span> <span class="st">"GAME OVER"</span>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="va">Bola</span>.ativo <span class="op">←</span> <span class="nm">FALSO</span>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">PlaySom</span>(<span class="st">"note-do.mp3"</span>)
+<br><span class="kw">SENÃO</span>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="va">Bola</span>.<span class="fn">Bounce</span>(<span class="va">borda</span>)
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="fn">PlaySom</span>(<span class="st">"single-knock.mp3"</span>)
+      </div>
+      <div class="wb">
+        <p style="font-size:12px;"><strong style="color:#92400E;">Atenção:</strong> O computador executa UM caminho — o Então <em>ou</em> o Senão. Nunca os dois ao mesmo tempo.</p>
+      </div>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:13px;">Lógica Booleana — VERDADEIRO ou FALSO</h3>
+      <p style="font-size:12px;color:var(--s600);margin-bottom:13px;">Qualquer condição tem só dois estados. Sem meio-termo.</p>
+
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+        <div style="display:grid;grid-template-columns:60px 1fr;border:1.5px solid var(--s200);border-radius:9px;overflow:hidden;">
+          <div style="background:var(--s100);padding:10px 12px;font-weight:800;font-size:12px;border-right:1px solid var(--s200);display:flex;align-items:center;">E</div>
+          <div style="padding:10px 13px;font-size:12px;color:var(--s700);">Ambas as condições precisam ser <span class="bd bg" style="font-size:9px;">VERDADEIRO</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:60px 1fr;border:1.5px solid var(--s200);border-radius:9px;overflow:hidden;">
+          <div style="background:var(--s100);padding:10px 12px;font-weight:800;font-size:12px;border-right:1px solid var(--s200);display:flex;align-items:center;">OU</div>
+          <div style="padding:10px 13px;font-size:12px;color:var(--s700);">Pelo menos uma precisa ser <span class="bd bg" style="font-size:9px;">VERDADEIRO</span></div>
+        </div>
+        <div style="display:grid;grid-template-columns:60px 1fr;border:1.5px solid var(--s200);border-radius:9px;overflow:hidden;">
+          <div style="background:var(--s100);padding:10px 12px;font-weight:800;font-size:12px;border-right:1px solid var(--s200);display:flex;align-items:center;">NÃO</div>
+          <div style="padding:10px 13px;font-size:12px;color:var(--s700);">Inverte: VERDADEIRO vira <span class="bd br" style="font-size:9px;">FALSO</span></div>
+        </div>
+      </div>
+
+      <div class="ob">
+        <p style="font-size:11.5px;"><strong style="color:#065F46;">No jogo:</strong><br>
+        <code style="font-size:10.5px;background:rgba(0,0,0,.06);padding:1px 5px;border-radius:3px;">Avançado.Marcado</code> <strong>E</strong> <code style="font-size:10.5px;background:rgba(0,0,0,.06);padding:1px 5px;border-radius:3px;">Pontos MOD 2 = 0</code><br>
+        → Ambas verdadeiras = acelera a bola!</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 08 — MATEMÁTICA & MÓDULO
+══════════════════════════════════════════════ -->
+<div class="slide" id="s8">
+  <div class="tag">07 — Matemática na Programação</div>
+  <h2>Operações e o Poder do Módulo</h2>
+
+  <div class="g2" style="gap:26px;align-items:start;">
+    <div>
+      <!-- Basic ops -->
+      <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:18px;">
+        <div style="display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:9px 13px;background:#fff;border:1.5px solid var(--s200);border-radius:8px;">
+          <span style="font-size:18px;color:var(--b600);font-weight:700;text-align:center;">+</span>
+          <span style="font-size:12px;">Adição</span>
+          <code style="font-size:11px;background:var(--b050);color:var(--b600);padding:2px 8px;border-radius:5px;">Pontos + 1</code>
+        </div>
+        <div style="display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:9px 13px;background:#fff;border:1.5px solid var(--s200);border-radius:8px;">
+          <span style="font-size:18px;color:var(--b600);font-weight:700;text-align:center;">-</span>
+          <span style="font-size:12px;">Subtração</span>
+          <code style="font-size:11px;background:var(--b050);color:var(--b600);padding:2px 8px;border-radius:5px;">360 - Heading</code>
+        </div>
+        <div style="display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:9px 13px;background:#fff;border:1.5px solid var(--s200);border-radius:8px;">
+          <span style="font-size:18px;color:var(--b600);font-weight:700;text-align:center;">÷</span>
+          <span style="font-size:12px;">Divisão</span>
+          <code style="font-size:11px;background:var(--b050);color:var(--b600);padding:2px 8px;border-radius:5px;">Width / 2</code>
+        </div>
+      </div>
+
+      <!-- MOD visual -->
+      <div style="border:2px solid var(--a400);border-radius:13px;padding:18px;background:var(--a050);">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+          <span class="bd ba">⭐ MOD</span>
+          <span style="font-size:12px;font-weight:700;color:#92400E;">Resto da Divisão</span>
+        </div>
+        <div style="background:#fff;border-radius:9px;padding:14px;text-align:center;border:1px solid var(--a100);margin-bottom:12px;">
+          <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--navy);margin-bottom:6px;">7 ÷ 2</div>
+          <div style="display:flex;justify-content:center;gap:22px;margin-bottom:10px;">
+            <div><div style="font-size:10px;color:var(--s500);margin-bottom:2px;">Quociente</div><div style="font-weight:700;font-size:22px;color:var(--s700);">3</div></div>
+            <div style="width:1px;background:var(--s200);"></div>
+            <div><div style="font-size:10px;color:var(--s500);margin-bottom:2px;">Resto</div><div style="font-weight:700;font-size:22px;color:var(--a500);">1</div></div>
+          </div>
+          <div style="padding-top:10px;border-top:1px solid var(--s100);">
+            <code style="font-size:17px;color:var(--a500);font-weight:700;">7 MOD 2 = 1</code>
+          </div>
+        </div>
+        <p style="font-size:11.5px;color:#92400E;line-height:1.6;"><strong>Superpower:</strong> detectar par/ímpar e criar ciclos automáticos.</p>
+      </div>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:13px;">Por que o MOD é tão útil?</h3>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="card" style="padding:13px 15px;">
+          <div style="font-size:11px;font-weight:700;color:var(--s500);margin-bottom:8px;letter-spacing:.08em;text-transform:uppercase;">Detectar Par / Ímpar</div>
+          <div class="code" style="padding:10px 13px;font-size:11.5px;">
+<span class="va">n</span> <span class="kw">MOD</span> <span class="nm">2</span> <span class="op">=</span> <span class="nm">0</span>  <span class="cm">→ PAR ✓</span>
+<br><span class="va">n</span> <span class="kw">MOD</span> <span class="nm">2</span> <span class="op">=</span> <span class="nm">1</span>  <span class="cm">→ ÍMPAR</span>
+          </div>
+        </div>
+
+        <div class="card cla" style="padding:13px 15px;">
+          <div style="font-size:11px;font-weight:700;color:var(--s500);margin-bottom:8px;letter-spacing:.08em;text-transform:uppercase;">No Nosso Jogo</div>
+          <div class="code" style="padding:10px 13px;font-size:11.5px;">
+<span class="kw">SE</span> <span class="va">Pontos</span> <span class="kw">MOD</span> <span class="nm">2</span> <span class="op">=</span> <span class="nm">0</span>
+<br>&nbsp;&nbsp;<span class="kw">E</span> <span class="va">Avançado</span> <span class="op">=</span> <span class="nm">VERDADEIRO</span>
+<br>&nbsp;&nbsp;<span class="va">Velocidade</span> <span class="op">←</span> <span class="va">Velocidade</span> <span class="op">+</span> <span class="nm">1</span>
+<br><span class="cm">← a cada 2 pontos, bola acelera!</span>
+          </div>
+        </div>
+
+        <div style="background:var(--navy);border-radius:9px;padding:13px 15px;">
+          <p style="color:rgba(255,255,255,.78);font-size:12px;line-height:1.6;"><strong style="color:var(--a400);">Analogia:</strong> Pense em rodadas de 5. Na 5ª, 10ª, 15ª o contador "zera". O MOD detecta exatamente esses momentos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 09 — VARIÁVEIS
+══════════════════════════════════════════════ -->
+<div class="slide" id="s9">
+  <div class="tag">08 — Variáveis</div>
+  <h2>A Memória do App</h2>
+
+  <div class="g2" style="gap:32px;align-items:center;">
+    <div>
+      <p style="font-size:clamp(13px,1.5vw,16px);margin-bottom:20px;line-height:1.65;">Uma variável é como uma <strong>caixinha com etiqueta</strong>. O nome é a etiqueta; o valor é o conteúdo. O app lembra e muda esse valor enquanto roda.</p>
+
+      <!-- Variable box visual -->
+      <div style="border-radius:11px;overflow:hidden;border:1.5px solid var(--s200);margin-bottom:14px;">
+        <div style="display:flex;align-items:stretch;">
+          <div style="background:var(--b600);padding:14px 18px;display:flex;align-items:center;min-width:130px;">
+            <div>
+              <div style="font-size:9px;color:rgba(255,255,255,.65);letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px;">Nome</div>
+              <div style="font-weight:700;font-size:15px;color:#fff;font-family:monospace;">Pontos</div>
+              <div style="font-size:9px;color:rgba(255,255,255,.5);margin-top:3px;">global</div>
+            </div>
+          </div>
+          <div style="background:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex:1;">
+            <div>
+              <div style="font-size:9px;color:var(--s400);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;">Valor atual</div>
+              <div style="font-weight:800;font-size:26px;color:var(--navy);">0</div>
+            </div>
+            <span class="bd bb">Inteiro</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="ib">
+        <p style="font-size:12px;"><strong style="color:var(--b600);">Global vs. Local:</strong> <em>Global</em> = qualquer parte do app acessa. <em>Local</em> = existe só dentro do procedimento que a criou. Use global para dados que precisam persistir.</p>
+      </div>
+    </div>
+
+    <div>
+      <h3 style="margin-bottom:14px;">Três Tipos Essenciais</h3>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <div class="card ct" style="padding:14px 17px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-weight:700;font-size:13px;">Número</span>
+            <span class="bd bb" style="font-size:10px;">Integer / Decimal</span>
+          </div>
+          <div class="code" style="padding:8px 12px;font-size:11.5px;">
+<span class="va">Pontos</span> <span class="op">←</span> <span class="nm">0</span>&nbsp;&nbsp;&nbsp;&nbsp;<span class="va">Velocidade</span> <span class="op">←</span> <span class="nm">5.0</span>
+          </div>
+        </div>
+        <div class="card cg" style="padding:14px 17px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-weight:700;font-size:13px;">Texto</span>
+            <span class="bd bg" style="font-size:10px;">String</span>
+          </div>
+          <div class="code" style="padding:8px 12px;font-size:11.5px;">
+<span class="va">Mensagem</span> <span class="op">←</span> <span class="st">"GAME OVER"</span>
+          </div>
+        </div>
+        <div class="card ca" style="padding:14px 17px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+            <span style="font-weight:700;font-size:13px;">Booleano</span>
+            <span class="bd ba" style="font-size:10px;">True / False</span>
+          </div>
+          <div class="code" style="padding:8px 12px;font-size:11.5px;">
+<span class="va">JogoAtivo</span> <span class="op">←</span> <span class="nm">VERDADEIRO</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 10 — PROCEDIMENTOS
+══════════════════════════════════════════════ -->
+<div class="slide" id="s10">
+  <div class="tag">09 — Procedimentos</div>
+  <h2>Atalhos com Nome</h2>
+  <p style="margin-bottom:22px;max-width:560px;">Um procedimento é um bloco de ações que você <strong>nomeia e reutiliza</strong>. Cria uma vez, chama onde quiser. A divisão fundamental: com ou sem retorno.</p>
+
+  <div class="g2" style="gap:20px;">
+    <!-- Sem retorno -->
+    <div class="card" style="padding:20px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:15px;">
+        <span class="bd bs">Sem Retorno</span>
+        <span style="font-size:10px;color:var(--s400);">— só executa ações</span>
+      </div>
+      <div class="code" style="font-size:11.5px;margin-bottom:13px;">
+<span class="kw">procedimento</span> <span class="fn">PlaySom</span>(<span class="va">arquivo</span>)
+<br>&nbsp;&nbsp;<span class="kw">SE</span> <span class="va">Som</span>.marcado
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="va">Som1</span>.fonte <span class="op">←</span> <span class="va">arquivo</span>
+<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class="va">Som1</span>.<span class="fn">Tocar</span>()
+<br><span class="cm">← não devolve nada para quem chamou</span>
+      </div>
+      <div style="background:var(--s100);border-radius:8px;padding:11px 13px;margin-bottom:13px;">
+        <p style="font-size:11.5px;color:var(--s700);line-height:1.65;"><strong>Analogia:</strong> "Acenda a luz." — Uma ordem que resulta numa ação. Ninguém espera uma resposta de volta.</p>
+      </div>
+      <div>
+        <div style="font-size:10px;font-weight:700;color:var(--s500);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px;">Exemplos no jogo</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;">
+          <code style="font-size:10.5px;background:var(--s100);padding:2px 8px;border-radius:4px;color:var(--s700);">PlaySom()</code>
+          <code style="font-size:10.5px;background:var(--s100);padding:2px 8px;border-radius:4px;color:var(--s700);">FlagDificuldade()</code>
+          <code style="font-size:10.5px;background:var(--s100);padding:2px 8px;border-radius:4px;color:var(--s700);">AlterarEMostrarPontuacao()</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- Com retorno -->
+    <div class="card" style="border:1.5px solid var(--b200);background:var(--b050);padding:20px;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:15px;">
+        <span class="bd bb">Com Retorno</span>
+        <span style="font-size:10px;color:var(--s400);">— calcula e devolve um valor</span>
+      </div>
+      <div class="code" style="font-size:11.5px;margin-bottom:13px;">
+<span class="kw">função</span> <span class="fn">calcularMedio</span>(<span class="va">a</span>, <span class="va">b</span>)
+<br>&nbsp;&nbsp;<span class="kw">devolver</span> (<span class="va">a</span> <span class="op">+</span> <span class="va">b</span>) <span class="op">/</span> <span class="nm">2</span>
+<br>
+<br><span class="cm">← uso em outro lugar:</span>
+<br><span class="va">media</span> <span class="op">←</span> <span class="fn">calcularMedio</span>(<span class="nm">8</span>, <span class="nm">10</span>)
+<br><span class="cm">← media agora vale 9</span>
+      </div>
+      <div style="background:#fff;border-radius:8px;padding:11px 13px;border:1px solid var(--b100);margin-bottom:13px;">
+        <p style="font-size:11.5px;color:var(--s700);line-height:1.65;"><strong>Analogia:</strong> "Qual é o dobro de 5?" — Uma pergunta que <em>espera uma resposta</em>. O valor devolvido pode ser usado em outro cálculo.</p>
+      </div>
+      <div style="padding:10px 12px;background:#fff;border-radius:8px;border:1px solid var(--b100);">
+        <p style="font-size:11.5px;color:var(--s700);">💡 No App Inventor: bloco <strong style="color:var(--b600);">"to … result"</strong> devolve valor · <strong style="color:var(--s700);">"to … do"</strong> só executa</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 11 — NOSSO PROJETO
+══════════════════════════════════════════════ -->
+<div class="slide" id="s11">
+  <div class="tag">10 — Tudo se Conecta</div>
+  <h2>Ping Pong: A Arquitetura</h2>
+
+  <div class="g2" style="gap:24px;align-items:start;">
+    <!-- Event flow -->
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <div class="card cl" style="padding:12px 15px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+          <span class="bd bb" style="font-size:10px;">Evento</span>
+          <code style="font-size:11.5px;color:var(--navy);">START.Clicado</code>
+        </div>
+        <p style="font-size:11.5px;color:var(--s600);">Centraliza bola + raquete · direção aleatória 225°–315° · zera placar</p>
+      </div>
+      <div style="text-align:center;color:var(--s300);font-size:18px;">↓</div>
+      <div class="card clg" style="padding:12px 15px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+          <span class="bd bg" style="font-size:10px;">Evento</span>
+          <code style="font-size:11.5px;color:var(--navy);">Canvas.Arrastado</code>
+        </div>
+        <p style="font-size:11.5px;color:var(--s600);">Raquete.x ← posição X do toque. Só o eixo horizontal se move.</p>
+      </div>
+      <div style="text-align:center;color:var(--s300);font-size:18px;">↓</div>
+      <div class="card cla" style="padding:12px 15px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+          <span class="bd ba" style="font-size:10px;">Evento</span>
+          <code style="font-size:11.5px;color:var(--navy);">Bola.Colidiu</code>
+        </div>
+        <p style="font-size:11.5px;color:var(--s600);">Rebate (360 − Heading) · +1 ponto · PlaySom · FlagDificuldade(MOD 2)</p>
+      </div>
+      <div style="text-align:center;color:var(--s300);font-size:18px;">↓</div>
+      <div class="card clr" style="padding:12px 15px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+          <span class="bd br" style="font-size:10px;">Evento</span>
+          <code style="font-size:11.5px;color:var(--navy);">Bola.BordaAtingida</code>
+        </div>
+        <p style="font-size:11.5px;color:var(--s600);">Borda <code style="font-size:10.5px;background:var(--s100);padding:1px 4px;border-radius:3px;">-1</code> (baixo) → GAME OVER. Demais bordas → Bounce.</p>
+      </div>
+    </div>
+
+    <div>
+      <!-- Procedures -->
+      <div class="card" style="padding:18px;margin-bottom:14px;">
+        <h3 style="margin-bottom:12px;">Procedimentos Criados</h3>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div style="display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--s100);border-radius:8px;">
+            <span class="bd bs" style="font-size:9px;min-width:76px;justify-content:center;">Sem retorno</span>
+            <code style="font-size:10.5px;color:var(--navy);">AlterarEMostrarPontuacao(NovoPonto)</code>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--s100);border-radius:8px;">
+            <span class="bd bs" style="font-size:9px;min-width:76px;justify-content:center;">Sem retorno</span>
+            <code style="font-size:10.5px;color:var(--navy);">PlaySom(Arquivo)</code>
+          </div>
+          <div style="display:flex;align-items:center;gap:9px;padding:9px 11px;background:var(--s100);border-radius:8px;">
+            <span class="bd bs" style="font-size:9px;min-width:76px;justify-content:center;">Sem retorno</span>
+            <code style="font-size:10.5px;color:var(--navy);">FlagDificuldade()</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Variable -->
+      <div class="card" style="padding:18px;margin-bottom:14px;">
+        <h3 style="margin-bottom:12px;">Variável Global</h3>
+        <div style="display:flex;align-items:stretch;border-radius:9px;overflow:hidden;border:1.5px solid var(--s200);">
+          <div style="background:var(--b600);padding:10px 14px;color:#fff;font-weight:700;font-family:monospace;font-size:13px;display:flex;align-items:center;">Pontos</div>
+          <div style="padding:10px 16px;font-size:22px;font-weight:800;color:var(--navy);display:flex;align-items:center;">0</div>
+          <div style="margin-left:auto;padding:10px 13px;display:flex;align-items:center;"><span class="bd bb" style="font-size:10px;">Integer</span></div>
+        </div>
+      </div>
+
+      <!-- Difficulty note -->
+      <div class="ob">
+        <p style="font-size:12px;"><strong style="color:#065F46;">Dificuldade progressiva:</strong> A cada <strong>2 pontos</strong> (Pontos MOD 2 = 0) e com o CheckBox marcado, a velocidade da bola aumenta +1. Simples e eficaz.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SLIDE 12 — ENCERRAMENTO
+══════════════════════════════════════════════ -->
+<div class="slide dark" id="s12">
+  <!-- Decorative -->
+  <div style="position:absolute;right:-40px;bottom:-40px;opacity:.05;pointer-events:none;">
+    <svg width="580" height="480" viewBox="0 0 580 480">
+      <circle cx="480" cy="380" r="280" fill="none" stroke="#fff" stroke-width="1.2"/>
+      <circle cx="480" cy="380" r="190" fill="none" stroke="#fff" stroke-width="1"/>
+      <circle cx="480" cy="380" r="100" fill="#fff"/>
+    </svg>
+  </div>
+  <div style="position:absolute;right:14%;top:18%;animation:float 4s ease-in-out infinite;opacity:.15;pointer-events:none;">
+    <svg width="74" height="74"><circle cx="37" cy="37" r="35" fill="#fff"/><circle cx="28" cy="28" r="10" fill="rgba(0,0,0,.15)"/></svg>
+  </div>
+
+  <div style="position:relative;z-index:1;max-width:740px;">
+    <div class="tag">12 — Encerramento</div>
+
+    <!-- Kleon reference -->
+    <div style="margin:18px 0 28px;">
+      <p style="font-size:11px;color:var(--s500);letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px;">Inspirado em Austin Kleon · Roube como um Artista</p>
+      <div style="border-left:3px solid var(--b500);padding-left:22px;">
+        <p style="font-family:'DM Serif Display',serif;font-size:clamp(17px,2.6vw,30px);color:#fff;line-height:1.45;font-style:italic;">Nada é 100% original.<br>Todo criador pega o que existe,<br>olha com novos olhos<br>e transforma em algo seu.</p>
+      </div>
+    </div>
+
+    <div style="height:1px;background:rgba(255,255,255,.08);margin-bottom:24px;"></div>
+
+    <!-- Call to action -->
+    <p style="font-family:'DM Serif Display',serif;font-size:clamp(16px,2.2vw,26px);color:#fff;line-height:1.55;margin-bottom:26px;">Programem as histórias<br>que vocês querem ver prontas.</p>
+
+    <!-- 3 questions -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:580px;margin-bottom:28px;">
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px 12px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:6px;">🎮</div>
+        <p style="font-size:11px;color:rgba(255,255,255,.65);font-weight:600;line-height:1.5;">Que jogo você ainda não encontrou?</p>
+      </div>
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px 12px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:6px;">📱</div>
+        <p style="font-size:11px;color:rgba(255,255,255,.65);font-weight:600;line-height:1.5;">Que app você precisava e não existia?</p>
+      </div>
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:14px 12px;text-align:center;">
+        <div style="font-size:20px;margin-bottom:6px;">💡</div>
+        <p style="font-size:11px;color:rgba(255,255,255,.65);font-weight:600;line-height:1.5;">Que problema real você resolveria?</p>
+      </div>
+    </div>
+
+    <!-- Link -->
+    <div style="display:flex;align-items:center;gap:11px;">
+      <div style="width:34px;height:34px;background:var(--b600);border-radius:50%;display:flex;align-items:center;justify-content:center;animation:float 3s ease-in-out infinite;flex-shrink:0;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      </div>
+      <p style="font-size:12px;color:var(--s500);">ai2.appinventor.mit.edu &nbsp;·&nbsp; Projeto: PingPong.aia</p>
+    </div>
+  </div>
+</div>
+
+</div><!-- #deck -->
+
+<!-- Controls -->
+<div id="bar"></div>
+<div id="ctr">1 / 12</div>
+<button class="nav" id="prev" onclick="go(-1)" disabled>&#8249;</button>
+<button class="nav" id="next" onclick="go(1)">&#8250;</button>
+
+<script>
+(function(){
+  let c = 0;
+  const slides = document.querySelectorAll('.slide');
+  const N = slides.length;
+  const bar = document.getElementById('bar');
+  const ctr = document.getElementById('ctr');
+  const prev = document.getElementById('prev');
+  const next = document.getElementById('next');
+
+  function go(d) {
+    slides[c].classList.remove('active');
+    c = Math.max(0, Math.min(N-1, c+d));
+    slides[c].classList.add('active');
+    ctr.textContent = (c+1) + ' / ' + N;
+    bar.style.width = ((c+1)/N*100) + '%';
+    prev.disabled = c === 0;
+    next.disabled = c === N-1;
+  }
+
+  window.go = go;
+
+  document.addEventListener('keydown', function(e){
+    if(['ArrowRight','ArrowDown',' '].includes(e.key)){ e.preventDefault(); go(1); }
+    if(['ArrowLeft','ArrowUp'].includes(e.key)){ e.preventDefault(); go(-1); }
+  });
+
+  // init progress
+  bar.style.width = (1/N*100) + '%';
+})();
+</script>
+</body>
+</html>
